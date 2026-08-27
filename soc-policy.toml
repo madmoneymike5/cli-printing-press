@@ -1,4 +1,4 @@
-checker_commit = "a0e06bc0d625ec4f02b8f24fddfcd261df10e1cd"
+checker_commit = "845dd327e8504cf63ebe3a843daafdc8d803cb6e"
 limit = 300
 include = ["**/*.py", "**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "**/*.go", "**/*.rs", "**/*.java", "**/*.c", "**/*.h", "**/*.cpp", "**/*.hpp", "**/*.cc", "**/*.sh", "**/*.sql", "**/*.rb", "**/*.php", "**/*.swift", "**/*.kt", "**/*.kts", "**/*.css", "**/*.html", "**/*.vue"]
 exclude = ["tests/fixtures/**", "testdata/**", "docs/generated/**", "store/**"]
