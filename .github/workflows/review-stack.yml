@@ -17,3 +17,5 @@ jobs:
         export GOFLAGS="${GOFLAGS:+$GOFLAGS }-buildvcs=false"; go vet ./...
       central-ref: v1
       opengrep-excludes: ""
+      gitleaks-excludes: |-
+        
