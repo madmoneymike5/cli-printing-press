@@ -65,7 +65,6 @@ func TestCanonicalSkillInstallSectionMatchesTemplate(t *testing.T) {
 }
 
 func TestCategorylessInstallSectionsAvoidOtherLibraryPath(t *testing.T) {
-	t.Parallel()
 
 	apiSpec := minimalSpec("gohighlevel")
 	outputDir := filepath.Join(t.TempDir(), "gohighlevel-pp-cli")
@@ -73,7 +72,6 @@ func TestCategorylessInstallSectionsAvoidOtherLibraryPath(t *testing.T) {
 
 	for _, filename := range []string{"SKILL.md", "README.md"} {
 		t.Run(filename, func(t *testing.T) {
-			t.Parallel()
 
 			rendered, err := os.ReadFile(filepath.Join(outputDir, filename))
 			require.NoError(t, err)
