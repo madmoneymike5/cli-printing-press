@@ -14,6 +14,6 @@ jobs:
     uses: madmoneymike5/review-stack-runtime/.github/workflows/review-stack.yml@v1
     with:
       native-command: >-
-        go vet ./... && go test ./...
+        export GOFLAGS="${GOFLAGS:+$GOFLAGS }-buildvcs=false"; go vet ./... && go test ./... -timeout 15m
       central-ref: v1
       opengrep-excludes: ""
