@@ -1,39 +1,54 @@
 {
-  "statusCheck": true,
-  "triggerOnUpdates": true,
   "customContext": {
     "rules": [
       {
-        "scope": [".github/workflows/**"],
-        "rule": "P0. A workflow that combines a pull_request_target trigger with a checkout step whose ref points at PR-head code (github.event.pull_request.head.sha, github.event.pull_request.head.ref, or refs/pull/<n>/merge) is the TanStack mini-Shai-Hulud attack shape — head code runs with base-context secrets and OIDC tokens, which attackers exfiltrate from runner memory. The repo's existing pull_request_target workflow (conversation-resolution-check.yml) makes API calls only and does not check out PR head; new workflows must follow that posture. Flag any new pull_request_target workflow that overrides the checkout ref. Recommend switching to pull_request, or removing the ref override so checkout defaults to the base commit."
+        "rule": "P0. A workflow that combines a pull_request_target trigger with a checkout step whose ref points at PR-head code (github.event.pull_request.head.sha, github.event.pull_request.head.ref, or refs/pull/<n>/merge) is the TanStack mini-Shai-Hulud attack shape \u2014 head code runs with base-context secrets and OIDC tokens, which attackers exfiltrate from runner memory. The repo's existing pull_request_target workflow (conversation-resolution-check.yml) makes API calls only and does not check out PR head; new workflows must follow that posture. Flag any new pull_request_target workflow that overrides the checkout ref. Recommend switching to pull_request, or removing the ref override so checkout defaults to the base commit.",
+        "scope": [
+          ".github/workflows/**"
+        ]
       },
       {
-        "scope": [".github/workflows/**"],
-        "rule": "P0. id-token: write mints OIDC tokens consumers use to publish to npm, Sigstore, AWS, etc. In this repo the allowlist is empty — release.yml uses keyed cosign signing and no other workflow needs OIDC. Any new workflow granting id-token: write is the TanStack OIDC-theft attack shape. Flag and recommend either removing the permission, or if a publishing workflow is genuinely being introduced, adding it to the allowlist in .github/scripts/verify-supply-chain/signals.py in the same PR with reviewer sign-off."
+        "rule": "P0. id-token: write mints OIDC tokens consumers use to publish to npm, Sigstore, AWS, etc. In this repo the allowlist is empty \u2014 release.yml uses keyed cosign signing and no other workflow needs OIDC. Any new workflow granting id-token: write is the TanStack OIDC-theft attack shape. Flag and recommend either removing the permission, or if a publishing workflow is genuinely being introduced, adding it to the allowlist in .github/scripts/verify-supply-chain/signals.py in the same PR with reviewer sign-off.",
+        "scope": [
+          ".github/workflows/**"
+        ]
       },
       {
-        "scope": [".github/workflows/**"],
-        "rule": "P0. Setting GOPROXY, GOFLAGS, GONOSUMCHECK, GOSUMDB, or GONOSUMDB inside a workflow env block (workflow, job, or step level) lets PR authors redirect Go module resolution to an attacker proxy or suppress checksum verification (BufferZoneCorp attack shape). The repo does not use any of these overrides on origin/main as of 2026-05-17; new ones are forward-looking attack vectors. Flag any addition and recommend configuring private proxies at the org/runner level under operator review instead."
+        "rule": "P0. Setting GOPROXY, GOFLAGS, GONOSUMCHECK, GOSUMDB, or GONOSUMDB inside a workflow env block (workflow, job, or step level) lets PR authors redirect Go module resolution to an attacker proxy or suppress checksum verification (BufferZoneCorp attack shape). The repo does not use any of these overrides on origin/main as of 2026-05-17; new ones are forward-looking attack vectors. Flag any addition and recommend configuring private proxies at the org/runner level under operator review instead.",
+        "scope": [
+          ".github/workflows/**"
+        ]
       },
       {
-        "scope": ["internal/**/*.go", "cmd/**/*.go"],
-        "rule": "Judge whether the generator's purpose plausibly explains any credential-path read. Patterns to weigh: literal strings or os.Getenv calls for ~/.aws, ~/.ssh, ~/.kube, ~/.claude, ~/.vscode (the node-ipc and TanStack persistence/exfil paths), or env vars AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN, ACTIONS_ID_TOKEN_REQUEST_URL, GITHUB_TOKEN, NPM_TOKEN. The generator's own code reads specs and writes generated CLIs; it does not normally read user credentials. Flag P0 when a credential-path read is added unless the PR clearly justifies it. The generator must never write to ~/.claude/ or ~/.vscode/ — those were the TanStack persistence sinks."
+        "rule": "Judge whether the generator's purpose plausibly explains any credential-path read. Patterns to weigh: literal strings or os.Getenv calls for ~/.aws, ~/.ssh, ~/.kube, ~/.claude, ~/.vscode (the node-ipc and TanStack persistence/exfil paths), or env vars AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN, ACTIONS_ID_TOKEN_REQUEST_URL, GITHUB_TOKEN, NPM_TOKEN. The generator's own code reads specs and writes generated CLIs; it does not normally read user credentials. Flag P0 when a credential-path read is added unless the PR clearly justifies it. The generator must never write to ~/.claude/ or ~/.vscode/ \u2014 those were the TanStack persistence sinks.",
+        "scope": [
+          "internal/**/*.go",
+          "cmd/**/*.go"
+        ]
       },
       {
-        "scope": ["internal/openapi/parser.go"],
-        "rule": "The record-identity contract is intentional: x-resource-id wins; resolveIDFieldFromResponseSchema falls back through id-shaped keys first (id, resource-derived _id/_uuid/_guid spellings, then gid/sid/uid/uuid/guid), then URL-shaped keys (uri, self, selfLink, href, url), then name, then the first plausible required scalar. URL-shaped keys are not unconditional winners: urlShapedIDField also requires a plausible ID schema and urlFieldLooksIdentifier, so required URL-shaped fields qualify automatically but optional generic url fields without unique/identifier/permalink/canonical/resource uri/resource url hints fall through to name. Do not file a P1 claiming qualified URL-shaped keys should come after name, or claiming self/url should beat id when both exist."
+        "rule": "The record-identity contract is intentional: x-resource-id wins; resolveIDFieldFromResponseSchema falls back through id-shaped keys first (id, resource-derived _id/_uuid/_guid spellings, then gid/sid/uid/uuid/guid), then URL-shaped keys (uri, self, selfLink, href, url), then name, then the first plausible required scalar. URL-shaped keys are not unconditional winners: urlShapedIDField also requires a plausible ID schema and urlFieldLooksIdentifier, so required URL-shaped fields qualify automatically but optional generic url fields without unique/identifier/permalink/canonical/resource uri/resource url hints fall through to name. Do not file a P1 claiming qualified URL-shaped keys should come after name, or claiming self/url should beat id when both exist.",
+        "scope": [
+          "internal/openapi/parser.go"
+        ]
       },
       {
-        "scope": ["internal/generator/templates/helpers.go.tmpl", "internal/generator/templates/sync.go.tmpl"],
-        "rule": "Generated dependent path-param substitution intentionally reduces URL-valued resource IDs to the trailing path segment before escaping. Do not file a P1 asking replaceURLIDPathParam/pathParamSegmentValue or replaceDependentPathParam to preserve scheme, host, query, or earlier URL path components; APIs whose child paths take {id} must not receive a full URL as that segment. store.BareResourceID remains only the composite-storage-key suffix stripper, not a replacement for this URL-segment behavior."
+        "rule": "Generated dependent path-param substitution intentionally reduces URL-valued resource IDs to the trailing path segment before escaping. Do not file a P1 asking replaceURLIDPathParam/pathParamSegmentValue or replaceDependentPathParam to preserve scheme, host, query, or earlier URL path components; APIs whose child paths take {id} must not receive a full URL as that segment. store.BareResourceID remains only the composite-storage-key suffix stripper, not a replacement for this URL-segment behavior.",
+        "scope": [
+          "internal/generator/templates/helpers.go.tmpl",
+          "internal/generator/templates/sync.go.tmpl"
+        ]
       },
       {
+        "rule": "Do not file a P1 or P2 asking to remove GO-YYYY-NNNN advisory IDs or CVE IDs from dependency-pin / floor comments. Those identifiers keep the version floor tied to a named advisory (precedent: internal/generator/xnet_guard.go citing GO-2026-5025..5030). Dates, GitHub issue/PR numbers, and incident tickets remain prohibited.",
         "scope": [
           "internal/generator/*_guard.go",
           "docs/solutions/conventions/pin-transitive-security-deps-after-go-mod-tidy.md"
-        ],
-        "rule": "Do not file a P1 or P2 asking to remove GO-YYYY-NNNN advisory IDs or CVE IDs from dependency-pin / floor comments. Those identifiers keep the version floor tied to a named advisory (precedent: internal/generator/xnet_guard.go citing GO-2026-5025..5030). Dates, GitHub issue/PR numbers, and incident tickets remain prohibited."
+        ]
       }
     ]
-  }
+  },
+  "skipReview": "AUTOMATIC",
+  "statusCheck": true,
+  "triggerOnUpdates": true
 }
