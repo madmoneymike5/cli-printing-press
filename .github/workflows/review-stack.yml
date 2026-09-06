@@ -16,3 +16,4 @@ jobs:
       native-command: >-
         go vet ./... && go test ./...
       central-ref: v1
+      opengrep-excludes: ""
