@@ -22,7 +22,7 @@ require (
 	github.com/spf13/pflag v1.0.6
 	github.com/pelletier/go-toml/v2 v2.2.4
 {{- if or .HasHTMLExtraction (eq .Auth.Type "cookie") (eq .Auth.Type "composed")}}
-	golang.org/x/net v0.55.0
+	golang.org/x/net v0.56.0
 {{- end}}
 )
 
@@ -59,6 +59,6 @@ require golang.org/x/sys v0.46.0 // indirect
 // above their vulnerable versions (osv flags module presence; govulncheck
 // reachability = 0 for these REST CLIs). Emitted only when the surf transport
 // is present, so MVS keeps the floor; tidy drops it for CLIs without surf.
-require golang.org/x/crypto v0.53.0 // indirect
+require golang.org/x/crypto v0.55.0 // indirect
 require github.com/quic-go/quic-go v0.60.0 // indirect
 {{- end}}
