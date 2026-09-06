@@ -1,0 +1,9 @@
+# Reviewed fixture and documentation false positives; exact path/rule/line fingerprints only.
+docs/brainstorms/2026-04-03-composed-cookie-auth-requirements.md:generic-api-key:27
+internal/authdoctor/fingerprint_test.go:generic-api-key:16
+internal/generator/client_url_redaction_test.go:generic-api-key:141
+internal/generator/client_url_redaction_test.go:generic-api-key:156
+internal/generator/client_url_redaction_test.go:generic-api-key:168
+internal/generator/templates/cliutil_jwtshape_test.go.tmpl:generic-api-key:16
+testdata/openapi/stytch.yaml:generic-api-key:39948
+testdata/openapi/stytch.yaml:generic-api-key:44403
