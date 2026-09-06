@@ -65,7 +65,7 @@ func TestGeneratedBrowserCredentialBindsToCapturedDomain(t *testing.T) {
 		"same-host redirect re-stamping must retain the credential-domain gate")
 	assert.Contains(t, clientSrc, "publicsuffix.EffectiveTLDPlusOne",
 		"credential matching must use registrable domains")
-	assert.Contains(t, goMod, "golang.org/x/net v0.55.0",
+	assert.Contains(t, goMod, "golang.org/x/net v0.56.0",
 		"browser-session clients must declare the publicsuffix dependency")
 
 	// The negative path must remain unchanged for ordinary token auth: it has
@@ -84,7 +84,7 @@ func TestGeneratedBrowserCredentialBindsToCapturedDomain(t *testing.T) {
 		"ordinary token auth config must not emit browser credential binding")
 	assert.NotContains(t, bearerAuth, "CredentialDomain",
 		"ordinary token auth commands must not reference browser credential binding")
-	assert.NotContains(t, bearerMod, "golang.org/x/net v0.55.0",
+	assert.NotContains(t, bearerMod, "golang.org/x/net v0.56.0",
 		"ordinary token auth must not gain the browser-only dependency")
 	assert.Equal(t, 1, strings.Count(authSrc, `cfg.CredentialDomain = ".auth.example.com"`),
 		"browser login should record the capture domain")
