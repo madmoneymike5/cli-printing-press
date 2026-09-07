@@ -1,6 +1,6 @@
 # Review Stack
 
-This repository uses the central review stack at `madmoneymike5/review-stack-control`.
+This repository uses a reviewed immutable commit of the centrally managed review stack.
 
 Order:
 
