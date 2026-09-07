@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.31.2](https://github.com/madmoneymike5/cli-printing-press/compare/v4.31.1...v4.31.2) (2026-09-07)
+
+
+### Bug Fixes
+
+* **cli:** apply reserved-name gate to novel-feature command names ([#4298](https://github.com/madmoneymike5/cli-printing-press/issues/4298)) ([6870e64](https://github.com/madmoneymike5/cli-printing-press/commit/6870e640aff53c86e1962fb774a3420f17358f51))
+* **cli:** disambiguate collection vs item command stems ([#4294](https://github.com/madmoneymike5/cli-printing-press/issues/4294)) ([62b8950](https://github.com/madmoneymike5/cli-printing-press/commit/62b8950778b1c11bda8bd0b061bf7f03085a65b7))
+* **cli:** do not kill streaming transfers with the default timeout ([#4334](https://github.com/madmoneymike5/cli-printing-press/issues/4334)) ([50ed53c](https://github.com/madmoneymike5/cli-printing-press/commit/50ed53c89a76dbbc2d32cb793e71aa99112a5fe5))
+* **cli:** do not preserve files that reintroduce a fresh-generation build break ([#4300](https://github.com/madmoneymike5/cli-printing-press/issues/4300)) ([6c9e737](https://github.com/madmoneymike5/cli-printing-press/commit/6c9e7372c695d9b7c67b8595ac49fdc18c5c45dc))
+* **cli:** key response-path unwrap on resource+endpoint identity ([#4301](https://github.com/madmoneymike5/cli-printing-press/issues/4301)) ([54360bd](https://github.com/madmoneymike5/cli-printing-press/commit/54360bd9714e03b5189d2769e4bdf0324d8beb8c))
+* **cli:** normalize text spec checksums ([#4264](https://github.com/madmoneymike5/cli-printing-press/issues/4264)) ([4bfd0ec](https://github.com/madmoneymike5/cli-printing-press/commit/4bfd0eccce5cd252d55b5f1e99a305bb6cafc211))
+* **cli:** rewrite go.mod and name tokens on publish rename ([#4333](https://github.com/madmoneymike5/cli-printing-press/issues/4333)) ([1a4ece3](https://github.com/madmoneymike5/cli-printing-press/commit/1a4ece3c849ba1affa1ad05431500d57acaf8fc4))
+* **cli:** skip JSON guard on binary response bodies ([#4293](https://github.com/madmoneymike5/cli-printing-press/issues/4293)) ([ac1bd4a](https://github.com/madmoneymike5/cli-printing-press/commit/ac1bd4abd3ebfbcfe909a2017602ec3df9f42215))
+* **cli:** warn or carry templated hand-edits on cross-spec --force ([#4299](https://github.com/madmoneymike5/cli-printing-press/issues/4299)) ([f094593](https://github.com/madmoneymike5/cli-printing-press/commit/f0945937066741b0027fba91ddd4da7d271d1c04))
+* **generator:** add missing Example to feedback command template ([#4290](https://github.com/madmoneymike5/cli-printing-press/issues/4290)) ([bd9fab0](https://github.com/madmoneymike5/cli-printing-press/commit/bd9fab0ab8955a310d73080e3ff2208212f09526))
+* **generator:** honor patch records across regen ([#4332](https://github.com/madmoneymike5/cli-printing-press/issues/4332)) ([54ad99e](https://github.com/madmoneymike5/cli-printing-press/commit/54ad99eb68385245f2cff1b3f7c7880813d84472))
+* **sync:** honor per-endpoint base_url overrides ([#4331](https://github.com/madmoneymike5/cli-printing-press/issues/4331)) ([3cd6cba](https://github.com/madmoneymike5/cli-printing-press/commit/3cd6cba04899430a1cb2e4911de8d7270875c595))
+
 ## [4.31.1](https://github.com/mvanhorn/cli-printing-press/compare/v4.31.0...v4.31.1) (2026-08-19)
 
 
