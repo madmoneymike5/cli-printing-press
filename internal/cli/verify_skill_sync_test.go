@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -92,19 +93,116 @@ func TestVerifySkillDriftWorkflowGuardsLibraryCopy(t *testing.T) {
 		"scripts/verify-skill/verify_skill.py",
 		".github/workflows/verify-skill-drift-check.yml",
 		"issues: write",
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+		"persist-credentials: false",
 		"https://raw.githubusercontent.com/mvanhorn/printing-press-library/main/.github/scripts/verify-skill/verify_skill.py",
 		"GH_TOKEN: ${{ github.token }}",
 		"sha256sum",
 		"cmp -s",
+		"gh api \"repos/$GITHUB_REPOSITORY\" --jq '.has_issues'",
 		"gh issue list",
 		"gh issue create",
+		"Issues disabled; tracking issue not created.",
+		"::error::verify-skill drift detected between cli-printing-press and printing-press-library",
 		"exit 1",
-		"cp scripts/verify-skill/verify_skill.py ../printing-press-library/.github/scripts/verify-skill/verify_skill.py",
+		"Resolve the synchronization in a separate change after reviewing which copy contains intentional fixes.",
 	}
 	for _, want := range required {
 		if !strings.Contains(content, want) {
 			t.Fatalf("verify-skill drift workflow should contain %q", want)
 		}
+	}
+}
+
+func TestVerifySkillDriftWorkflowFailsClearlyWhenIssuesDisabled(t *testing.T) {
+	t.Parallel()
+	if runtime.GOOS == "windows" {
+		t.Skip("workflow shell runs on ubuntu-latest")
+	}
+
+	repoRoot := findRepoRoot(t)
+	workflowPath := filepath.Join(repoRoot, ".github", "workflows", "verify-skill-drift-check.yml")
+	data, err := os.ReadFile(workflowPath)
+	if err != nil {
+		t.Fatalf("read verify-skill drift workflow %s: %v", workflowPath, err)
+	}
+
+	var workflow struct {
+		Jobs map[string]struct {
+			Steps []struct {
+				Name string `yaml:"name"`
+				Run  string `yaml:"run"`
+			} `yaml:"steps"`
+		} `yaml:"jobs"`
+	}
+	if err := yaml.Unmarshal(data, &workflow); err != nil {
+		t.Fatalf("parse verify-skill drift workflow YAML: %v", err)
+	}
+
+	var runScript string
+	for _, step := range workflow.Jobs["compare-library-copy"].Steps {
+		if step.Name == "Compare verify-skill scripts" {
+			runScript = step.Run
+			break
+		}
+	}
+	if runScript == "" {
+		t.Fatal("verify-skill drift workflow has no comparison script")
+	}
+
+	tempDir := t.TempDir()
+	fakeBin := filepath.Join(tempDir, "bin")
+	if err := os.Mkdir(fakeBin, 0o755); err != nil {
+		t.Fatalf("create fake bin: %v", err)
+	}
+	fakeGH := `#!/bin/sh
+if [ "$1" = "api" ]; then
+  printf 'false\n'
+  exit 0
+fi
+printf 'unexpected gh command: %s\n' "$*" >&2
+exit 97
+`
+	if err := os.WriteFile(filepath.Join(fakeBin, "gh"), []byte(fakeGH), 0o755); err != nil {
+		t.Fatalf("write fake gh: %v", err)
+	}
+	libraryScript := filepath.Join(tempDir, "library-verify_skill.py")
+	if err := os.WriteFile(libraryScript, []byte("# intentionally different\n"), 0o600); err != nil {
+		t.Fatalf("write library script: %v", err)
+	}
+
+	scriptPath := filepath.Join(tempDir, "verify-skill-drift.sh")
+	if err := os.WriteFile(scriptPath, []byte(runScript), 0o600); err != nil {
+		t.Fatalf("write drift check script: %v", err)
+	}
+	summaryPath := filepath.Join(tempDir, "summary.md")
+	cmd := exec.Command("bash", scriptPath)
+	cmd.Dir = repoRoot
+	cmd.Env = append(os.Environ(),
+		"PATH="+fakeBin+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"RUNNER_TEMP="+tempDir,
+		"GITHUB_STEP_SUMMARY="+summaryPath,
+		"GITHUB_REPOSITORY=madmoneymike5/cli-printing-press",
+		"LIBRARY_VERIFY_SKILL_URL=file://"+libraryScript,
+	)
+	output, err := cmd.CombinedOutput()
+	exitErr, ok := err.(*exec.ExitError)
+	if !ok || exitErr.ExitCode() != 1 {
+		t.Fatalf("drift check exit = %v, want 1; output:\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "::error::verify-skill drift detected between cli-printing-press and printing-press-library") {
+		t.Fatalf("drift check did not emit explicit error; output:\n%s", output)
+	}
+	if strings.Contains(string(output), "unexpected gh command") {
+		t.Fatalf("Issues-disabled drift check called an issue command:\n%s", output)
+	}
+
+	summary, err := os.ReadFile(summaryPath)
+	if err != nil {
+		t.Fatalf("read workflow summary: %v", err)
+	}
+	if !strings.Contains(string(summary), "Issues disabled; tracking issue not created.") {
+		t.Fatalf("workflow summary did not explain skipped issue creation:\n%s", summary)
 	}
 }
 
