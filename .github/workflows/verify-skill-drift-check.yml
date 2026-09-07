@@ -26,7 +26,9 @@ jobs:
       LIBRARY_VERIFY_SKILL_URL: https://raw.githubusercontent.com/mvanhorn/printing-press-library/main/.github/scripts/verify-skill/verify_skill.py
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Compare verify-skill scripts
         shell: bash
@@ -53,34 +55,51 @@ jobs:
 
           The canonical verify-skill script and the printing-press-library CI copy have drifted.
 
-          From a workspace containing sibling checkouts of both repositories, update the library copy with:
-
-          ```bash
-          cp scripts/verify-skill/verify_skill.py ../printing-press-library/.github/scripts/verify-skill/verify_skill.py
-          ```
+          Resolve the synchronization in a separate change after reviewing which copy contains intentional fixes. Do not overwrite either copy blindly.
           EOF
 
             issue_title="verify-skill drift detected with printing-press-library"
-            existing_issue="$(gh issue list --state open --search "$issue_title in:title" --json number --jq '.[0].number // empty')"
-            if [[ -z "$existing_issue" ]]; then
-              issue_body="${RUNNER_TEMP:-/tmp}/verify-skill-drift-issue.md"
-              cat > "$issue_body" <<EOF
+            issue_error="${RUNNER_TEMP:-/tmp}/verify-skill-drift-gh-error.log"
+            if has_issues="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.has_issues' 2> "$issue_error")"; then
+              if [[ "$has_issues" == "true" ]]; then
+                if existing_issue="$(gh issue list --state open --search "$issue_title in:title" --json number --jq '.[0].number // empty' 2> "$issue_error")"; then
+                  if [[ -z "$existing_issue" ]]; then
+                    issue_body="${RUNNER_TEMP:-/tmp}/verify-skill-drift-issue.md"
+                    cat > "$issue_body" <<EOF
           The canonical verify-skill script in cli-printing-press no longer matches the printing-press-library CI copy.
 
           - Printing Press canonical: \`$local_hash\`
           - printing-press-library copy: \`$library_hash\`
           - Library source: $LIBRARY_VERIFY_SKILL_URL
 
-          From a workspace containing sibling checkouts of both repositories, update the library copy with:
-
-          \`\`\`bash
-          cp scripts/verify-skill/verify_skill.py ../printing-press-library/.github/scripts/verify-skill/verify_skill.py
-          \`\`\`
+          Resolve the synchronization in a separate change after reviewing which copy contains intentional fixes. Do not overwrite either copy blindly.
           EOF
 
-              gh issue create --title "$issue_title" --body-file "$issue_body"
+                    if issue_url="$(gh issue create --title "$issue_title" --body-file "$issue_body" 2> "$issue_error")"; then
+                      echo "Created drift issue: $issue_url" >> "$GITHUB_STEP_SUMMARY"
+                    else
+                      issue_create_error="$(tr '\n' ' ' < "$issue_error")"
+                      echo "::warning::op=gh_issue_create repo=$GITHUB_REPOSITORY title=$issue_title error=$issue_create_error"
+                      echo "Issue creation failed; tracking issue not created." >> "$GITHUB_STEP_SUMMARY"
+                    fi
+                  else
+                    echo "Existing open drift issue: #$existing_issue" >> "$GITHUB_STEP_SUMMARY"
+                  fi
+                else
+                  issue_lookup_error="$(tr '\n' ' ' < "$issue_error")"
+                  echo "::warning::op=gh_issue_list repo=$GITHUB_REPOSITORY title=$issue_title error=$issue_lookup_error"
+                  echo "Issue lookup failed; tracking issue not created." >> "$GITHUB_STEP_SUMMARY"
+                fi
+              elif [[ "$has_issues" == "false" ]]; then
+                echo "Issues disabled; tracking issue not created." >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "::warning::op=gh_api repo=$GITHUB_REPOSITORY error=unexpected_has_issues:$has_issues"
+                echo "Unexpected Issues status; tracking issue not created." >> "$GITHUB_STEP_SUMMARY"
+              fi
             else
-              echo "Existing open drift issue: #$existing_issue" >> "$GITHUB_STEP_SUMMARY"
+              gh_api_error="$(tr '\n' ' ' < "$issue_error")"
+              echo "::warning::op=gh_api repo=$GITHUB_REPOSITORY error=$gh_api_error"
+              echo "Issues status unavailable; tracking issue not created." >> "$GITHUB_STEP_SUMMARY"
             fi
 
             echo "::error::verify-skill drift detected between cli-printing-press and printing-press-library"
