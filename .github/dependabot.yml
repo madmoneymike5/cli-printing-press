@@ -1,27 +1,112 @@
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-  - package-ecosystem: pip
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-  - package-ecosystem: cargo
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
   - package-ecosystem: github-actions
-    directory: /
+    directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
-  - package-ecosystem: docker
-    directory: /
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/ebay-auth/fresh"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/ebay-auth/published"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/learn-loop-emission/fresh"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/learn-loop-emission/published"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/postman-explore/fresh"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/postman-explore/published"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/verify-short-circuit/fresh"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/internal/pipeline/regenmerge/testdata/verify-short-circuit/published"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-device-ble-control/ble-desk-lamp"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-device-ble-opaque/ble-opaque-binary"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-device-ble-session/ble-session-appliance"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-device-ble/ble-temperature-sensor"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-golden-api-cookie-auth/golden-api-cookie-auth"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/expected/generate-golden-api/printing-press-golden"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/dogfood-verdict-matrix/fail-path-auth-dead"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/dogfood-verdict-matrix/pass"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/dogfood-verdict-matrix/warn-priority"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/verify-runtime-matrix/mock-pass-pp-cli"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/verify-runtime-matrix/structural-fail-pp-cli"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: gomod
+    directory: "/testdata/golden/fixtures/verify-runtime-matrix/structural-pass-pp-cli"
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

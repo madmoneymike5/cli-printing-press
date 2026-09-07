@@ -11,9 +11,10 @@ permissions:
 
 jobs:
   review-stack:
-    uses: madmoneymike5/review-stack-runtime/.github/workflows/review-stack.yml@v1
+    uses: madmoneymike5/review-stack-runtime/.github/workflows/review-stack.yml@e32b9fa29dbcf65a289c3fd066d42cd7cb2f094f
     with:
       native-command: >-
         export GOFLAGS="${GOFLAGS:+$GOFLAGS }-buildvcs=false"; go vet ./...
-      central-ref: v1
       opengrep-excludes: ""
+      gitleaks-excludes: |-
+        
