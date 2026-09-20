@@ -43,3 +43,4 @@ AGENTS.override.md
 # See AGENTS.md "Plan documents stay local" for the rule and rationale.
 /docs/plans/
 /docs/brainstorms/
+.tokensave
