@@ -1,0 +1,22 @@
+name: SoC policy
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pinned checker
+        shell: bash
+        run: |
+          commit="$(python3 -c 'import tomllib; print(tomllib.load(open("soc-policy.toml", "rb"))["checker_commit"])')"
+          case "$commit" in (""|*[!0-9a-fA-F]*) echo "invalid checker_commit" >&2; exit 2;; esac
+          curl --fail --location --silent --show-error "https://raw.githubusercontent.com/madmoneymike5/soc-check/$commit/soc_check.py" --output /tmp/soc_check.py
+          python3 -m py_compile /tmp/soc_check.py
+          python3 /tmp/soc_check.py --root "$GITHUB_WORKSPACE" --policy "$GITHUB_WORKSPACE/soc-policy.toml" --mode all --json

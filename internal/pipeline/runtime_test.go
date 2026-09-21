@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	apispec "github.com/mvanhorn/cli-printing-press/v4/internal/spec"
@@ -339,6 +340,34 @@ func TestRunDataPipelineTestBoundsLiveSync(t *testing.T) {
 
 	assert.True(t, pass)
 	assert.Contains(t, detail, "items has 1 rows")
+}
+
+func TestRunDataPipelineTestLeavesUnpaginatedLiveSyncUnmodified(t *testing.T) {
+	binary := buildLiveUnboundedSyncProbeBinary(t)
+
+	pass, detail := runDataPipelineTest(binary, "", "live", os.Environ, 1)
+
+	assert.True(t, pass)
+	assert.Contains(t, detail, "items has 1 rows")
+}
+
+func TestRunDataPipelineTestProbesLiveSyncCapabilitiesOnce(t *testing.T) {
+	binary := buildLiveBoundedSyncProbeBinary(t)
+	logPath := filepath.Join(t.TempDir(), "sync-help.log")
+	envFn := func() []string {
+		return append(os.Environ(),
+			"PP_SYNC_HELP_LOG="+logPath,
+			"PP_FORCE_SYNC_FALLBACK=1",
+		)
+	}
+
+	pass, detail := runDataPipelineTest(binary, "", "live", envFn, 1)
+
+	assert.True(t, pass)
+	assert.Contains(t, detail, "items has 1 rows")
+	contents, err := os.ReadFile(logPath)
+	require.NoError(t, err)
+	assert.Equal(t, 1, strings.Count(string(contents), "help\n"))
 }
 
 func TestUnknownSyncFlagIgnoresEmptyFlagName(t *testing.T) {
@@ -897,6 +926,21 @@ func main() {
 	}
 	switch args[0] {
 	case "sync":
+		if len(args) > 1 && args[1] == "--help" {
+			if logPath := os.Getenv("PP_SYNC_HELP_LOG"); logPath != "" {
+				f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+				if err == nil {
+					_, _ = f.WriteString("help\n")
+					_ = f.Close()
+				}
+			}
+			fmt.Println("--max-pages int")
+			return
+		}
+		if os.Getenv("PP_FORCE_SYNC_FALLBACK") == "1" && (hasFlag(args[1:], "--resources") || hasFlag(args[1:], "--full")) {
+			fmt.Fprintln(os.Stderr, "unsupported sync shape")
+			os.Exit(1)
+		}
 		if !hasFlagValue(args[1:], "--max-pages", "1") {
 			fmt.Fprintln(os.Stderr, "live sync probe requires --max-pages 1")
 			os.Exit(1)
@@ -938,6 +982,92 @@ func hasFlagValue(args []string, flag, want string) bool {
 		}
 	}
 	return false
+}
+
+func hasFlag(args []string, flag string) bool {
+	for _, arg := range args {
+		if arg == flag {
+			return true
+		}
+	}
+	return false
+}
+
+func dbArg(args []string) string {
+	for i := 0; i+1 < len(args); i++ {
+		if args[i] == "--db" {
+			return args[i+1]
+		}
+	}
+	return ""
+}
+`)
+	binaryPath := filepath.Join(dir, "test-cli")
+	buildCmd := exec.Command("go", "build", "-o", "./test-cli", mainFile)
+	buildCmd.Dir = dir
+	out, err := buildCmd.CombinedOutput()
+	require.NoError(t, err, "building test binary: %s", string(out))
+	return binaryPath
+}
+
+func buildLiveUnboundedSyncProbeBinary(t *testing.T) string {
+	t.Helper()
+
+	dir := t.TempDir()
+	mainFile := filepath.Join(dir, "main.go")
+	writeTestFile(t, mainFile, `package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		os.Exit(1)
+	}
+	switch args[0] {
+	case "sync":
+		if len(args) > 1 && args[1] == "--help" {
+			fmt.Println("--full")
+			return
+		}
+		for _, arg := range args[1:] {
+			if arg == "--max-pages" {
+				fmt.Fprintln(os.Stderr, "unknown flag: --max-pages")
+				os.Exit(1)
+			}
+		}
+		dbPath := dbArg(args[1:])
+		if dbPath == "" {
+			os.Exit(1)
+		}
+		if err := os.WriteFile(dbPath+".marker", []byte(dbPath), 0o644); err != nil {
+			os.Exit(1)
+		}
+		return
+	case "sql":
+		dbPath := dbArg(args[1:])
+		if dbPath == "" {
+			os.Exit(1)
+		}
+		usedDB, err := os.ReadFile(dbPath + ".marker")
+		if err != nil || string(usedDB) != dbPath {
+			os.Exit(1)
+		}
+		query := args[len(args)-1]
+		if strings.Contains(query, "sqlite_master") {
+			fmt.Println("items")
+			return
+		}
+		if strings.Contains(query, "count(*)") {
+			fmt.Println(1)
+			return
+		}
+	}
+	os.Exit(1)
 }
 
 func dbArg(args []string) string {
